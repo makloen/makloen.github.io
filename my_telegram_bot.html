@@ -63,21 +63,26 @@
 
     bot = telebot.TeleBot("your-bot-token")
 
-    # ця функція парсить анекдоти з інтернету та повертає рандомний анекдот зі списку jokes
-    def parse_anekdot():
-      # тіло цієї функції тимчасово недоступно
-      jokes = []
-      return jokes[randint(0,len(jokes)-1)]
+    # -*- coding: utf-8 -*-
+import telebot
+import requests
 
-    @bot.message_handler(content_types=["text"])
-    def any_msg(message):
-      if message.text == "вйо":
-        bot.send_message(message.chat.id, parse_anekdot())
-      else:
-        bot.send_message(message.chat.id, 'Напиши "вйо", щоб почути анекдот')
+bot = telebot.TeleBot("728611212:AAEvkMC5psD6BnSAGQ-pXceB_09L9hieCOU")
 
-    if __name__ == '__main__':
-      bot.polling(none_stop=True)
+def random_joke():
+	url = "http://api.icndb.com/jokes/random"
+	joke = requests.get(url).json()
+	return joke['value']['joke']
+
+@bot.message_handler(content_types=["text"])
+def any_msg(message):
+	if message.text.lower() == "вйо":
+		bot.send_message(message.chat.id, random_joke())
+	else:
+		bot.send_message(message.chat.id, 'Напиши "вйо", щоб почути анекдот')
+
+if __name__ == '__main__':
+	bot.polling(none_stop=True)
         </code>
       </pre>
     </div>
