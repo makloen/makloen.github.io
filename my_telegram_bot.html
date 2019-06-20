@@ -67,7 +67,7 @@
 import telebot
 import requests
 
-bot = telebot.TeleBot("728611212:AAEvkMC5psD6BnSAGQ-pXceB_09L9hieCOU")
+bot = telebot.TeleBot("your-bot-token")
 
 def random_joke():
 	url = "http://api.icndb.com/jokes/random"
@@ -79,7 +79,7 @@ def any_msg(message):
 	if message.text.lower() == "вйо":
 		bot.send_message(message.chat.id, random_joke())
 	else:
-		bot.send_message(message.chat.id, 'Напиши "вйо", щоб почути анекдот')
+		bot.send_message(message.chat.id, 'message')
 
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
