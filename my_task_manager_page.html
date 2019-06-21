@@ -51,40 +51,101 @@
 
 
     <div class="container">
-      <h5 class="my-2">Accounting</h5>
+      <h5 class="my-2">Taks manager</h5>
       <p class="my-2">
-        В проеті використовувались навичкы створення ботів для месенджера Telegram. Ідея бота, здійснення запиту шляхом поданя ключового слова "вйо" та відповідь на нього, в нашому випадку, анекдотом. Для реалізації цього проекту використовувалась МП Phyton, бібліотека pyTelegramBotAPI, функція randint із бібліотеки Random. Анекдоти отрмували, шляхом парсингу з інтернету. Кожен з анекдотів є елементом списку змінної jokes.
+        Ідея проекту, створення менеджера завдань. В проекті присутній такий функціонал: додавання, редагування, збреження та завершення завдання. Для реалізації цього проекту використовував: Python 3.7, фреймворк Django 2.2.2, 
+        SQL Lite, HTML. 
       </p>
-      <pre class="border my-4">
+      
+      <pre class="border text-secondary">
         <code>
-    from os import walk, listdir, path
-    from shutil import copy
+    <b class=" text-danger"># views.py</b>
+    from django.views.generic import ListView
+    from django.shortcuts import render, redirect, get_object_or_404
+    from .models import Task
+    from .forms import AddTaskForm
 
-    # Пошук всіх файлів з форматом .jpg або .png або .svg на диску E:\\
-    dirr = "E:\\"
-    dirs = [x[0] for x in walk(dirr)]
+    class TaskListView(ListView):
+      queryset = Task.objects.all()
+      template_name = 'list_view.html'
 
-    for row in dirs:
-      for file in listdir(row):
-        if file.endswith(".jpg"):
-          try:
-            copy(path.join(row, file), 'images\\jpg')
-          except Exception as e:
-            print(e)
-        
-        elif file.endswith(".png"):
-          try:
-            copy(path.join(row, file), 'images\\png')
-          except Exception as e:
-            print(e)
-        
-        elif file.endswith(".svg"):
-          try:
-            copy(path.join(row, file), 'images\\svg')
-          except Exception as e:
-            print(e)
+
+    def detail_view(request, pk=None, *args, **kwargs):
+      instance = get_object_or_404(Task, pk=pk)
+      form = AddTaskForm(request.POST or None, request.FILES or None, instance=instance)
+      if form.is_valid():
+        if 'savebutton' in request.POST:
+          instance = form.save(commit=False)
+          instance.save()
+          return redirect("list")
+        elif 'deletebutton' in request.POST:
+          instance.delete()
+          return redirect("list")
+      context = {
+        'object': instance,
+        'form': form}
+      return render(request, 'detail_view.html', context)
+
+
+    def add_view(request):
+      form = AddTaskForm(request.POST or None, request.FILES or None)
+      if form.is_valid():
+        instance = form.save(commit=False)
+        instance.save()
+        return redirect("list")
+      context = {'form': form}
+      return render(request, 'add_view.html', context)
+
         </code>
       </pre>
+
+      <pre class="border text-secondary">
+        <code>
+    <b class=" text-danger"># models.py</b>
+    from django.db import models
+
+    class TaskManager(models.Manager):
+      def get_by_id(self, id):
+        qs = self.get_queryset().filter(id=id) # Product.objects == self.get_queryset()
+        if qs.count() == 1:
+          return qs.first()
+        return None
+
+
+    class Task(models.Model):
+      task  = models.CharField(max_length=100)
+      objects = TaskManager()
+
+      def get_absolute_url(self):
+        return "{pk}/".format(pk=self.pk)
+
+      def str(self):
+        return self.task
+        </code>
+      </pre>
+
+      <pre class="border text-secondary">
+        <code>
+    <b class=" text-danger"># forms.py</b>
+    from django import forms
+    from .models import Task
+
+    class AddTaskForm(forms.ModelForm):
+      task = forms.CharField(
+        label='',
+        widget=forms.TextInput(attrs={"placeholder":"New task", "class":"form-control my-1"})
+      )
+
+      class Meta:
+        model = Task
+        fields = ["task"]
+        </code>
+      </pre>
+
+
+
+
+
     </div>
 
 
